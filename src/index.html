@@ -20,21 +20,46 @@
             <button id="createRectangle" disabled>Generate QR Code</button>
         </div>
 
-        <form>
+        <form id="qrForm" onsubmit="generateResponse(event)">
             <label for="qrCodeURL">QR Code URL:</label>
-            <input type="url" id="qrCodeURL" name="qrCodeURL" /> <br><br>
+            <input type="url" id="qrCodeURL" name="qrCodeURL" required/> <br><br>
             <label for="qrAesthetic">QR Code Aesthetic:</label>
-            <input type="text" id="qrAesthetic" name="qrAesthetic"/> <br><br>
-            <input type="submit" value="Submit" onclick="generateResponse()"/>
+            <input type="text" id="qrAesthetic" name="qrAesthetic" required/> <br><br>
+            <button type="submit">Generate</button>
             <input type="reset" value="Reset" />
         </form>
 
-        <script>
-            // This function calls the Open API to generate a QR code
-            function generateResponse() {
-                const apiKey = 
-            }
+        <div id="result"></div>
 
+        <script>
+            async function generateResponse(event) {
+                event.preventDefault();
+                
+                const url = document.getElementById('qrCodeURL').value;
+                const aesthetic = document.getElementById('qrAesthetic').value;
+                
+                try {
+                    const response = await fetch('http://localhost:5000/generate-qr', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            url: url,
+                            aesthetic: aesthetic
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    document.getElementById('result').innerHTML = `
+                        <h3>Generated QR Code Style:</h3>
+                        <pre>${JSON.stringify(JSON.parse(data.style), null, 2)}</pre>
+                    `;
+                } catch (error) {
+                    console.error('Error:', error);
+                    document.getElementById('result').innerHTML = 'Error generating QR code style';
+                }
+            }
         </script>
 
         <script type="module" src="ui/index.js"></script>
