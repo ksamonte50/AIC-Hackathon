@@ -16,52 +16,73 @@
             Please note that this document does not use the spectrum web components theme for Express.
             You may use "addOnUISdk.app.ui.theme" to get the current theme and style accordingly.
         -->
-        <div class="container">
-            <button id="createRectangle" disabled>Generate QR Code</button>
-        </div>
-
-        <form id="qrForm" onsubmit="generateResponse(event)">
+        <h1>QR Code Generator</h1>
+        <div id="qrInputs">
             <label for="qrCodeURL">QR Code URL:</label>
             <input type="url" id="qrCodeURL" name="qrCodeURL" required/> <br><br>
             <label for="qrAesthetic">QR Code Aesthetic:</label>
             <input type="text" id="qrAesthetic" name="qrAesthetic" required/> <br><br>
-            <button type="submit">Generate</button>
-            <input type="reset" value="Reset" />
-        </form>
-
+            <button id="generateButton">Generate</button>
+            <button id="resetButton">Reset</button>
+        </div>
+        
         <div id="result"></div>
-
+        
         <script>
-            async function generateResponse(event) {
-                event.preventDefault();
-                
+            async function generateResponse() {
                 const url = document.getElementById('qrCodeURL').value;
                 const aesthetic = document.getElementById('qrAesthetic').value;
-                
+
+                console.log('Sending request with:', { url, aesthetic });
+
                 try {
-                    const response = await fetch('http://localhost:5000/generate-qr', {
+                    const response = await fetch('http://localhost:5001/generate-qr', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            'Accept': 'application/json'
                         },
                         body: JSON.stringify({
                             url: url,
                             aesthetic: aesthetic
                         })
                     });
-                    
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
                     const data = await response.json();
+                    console.log('Received response:', data);
+
+                    // Strip out the backticks from the style string and parse the valid JSON
+                    const styleString = data.style.replace(/^```json\n|\n```$/, ''); // Remove the code block formatting
+                    const parsedStyle = JSON.parse(styleString);
+
                     document.getElementById('result').innerHTML = `
                         <h3>Generated QR Code Style:</h3>
-                        <pre>${JSON.stringify(JSON.parse(data.style), null, 2)}</pre>
+                        <pre>${JSON.stringify(parsedStyle, null, 2)}</pre>
                     `;
                 } catch (error) {
-                    console.error('Error:', error);
-                    document.getElementById('result').innerHTML = 'Error generating QR code style';
+                    console.error('Detailed error:', error);
+                    document.getElementById('result').innerHTML = `Error generating QR code style: ${error.message}`;
                 }
             }
-        </script>
 
+        
+            document.getElementById('generateButton').addEventListener('click', function(event) {
+                event.preventDefault(); // still good to have
+                generateResponse();
+            });
+        
+            document.getElementById('resetButton').addEventListener('click', function() {
+                document.getElementById('qrCodeURL').value = '';
+                document.getElementById('qrAesthetic').value = '';
+                document.getElementById('result').innerHTML = '';
+            });
+        </script>
+        
         <script type="module" src="ui/index.js"></script>
+        
     </body>
 </html>
