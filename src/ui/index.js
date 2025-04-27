@@ -82,15 +82,10 @@ addOnUISdk.ready.then(async () => {
             // Display the QR code with proper sizing
             document.getElementById('result').innerHTML = `
                 <div class="qr-container">
+                    <h3>Generated QR Code</h3>
                     <img src="data:image/png;base64,${data.qrImage}" 
                         alt="Generated QR Code"
                         class="qr-image">
-                    <div class="qr-details">
-                        <p><strong>Colors:</strong></p>
-                        <p>Dots: <span style="color:${data.style.bodyColor}">${data.style.bodyColor}</span></p>
-                        <p>Background: <span style="color:${data.style.bgColor}">${data.style.bgColor}</span></p>
-                        <p>Style: ${data.style.dotStyle} dots</p>
-                    </div>
                 </div>
             `;
 
