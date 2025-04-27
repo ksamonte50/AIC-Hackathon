@@ -114,6 +114,7 @@ def generate_qr_style():
                     ball19 = "Exploding Star Shape"
 
                     eyeColor and eyeBallColor should be the same for all three eye squares.
+                    Only add a gradient if the user requests it.
                     The contrast between the QR pattern and the background must be high enough for QR code scanners to read it easily"""
                 },
                 {
