@@ -17,6 +17,7 @@
             You may use "addOnUISdk.app.ui.theme" to get the current theme and style accordingly.
         -->
         <h1>Prettify QR</h1>
+        <h2>Generate a QR Code with Custom Aesthetic</h2>
         <div id="qrInputs">
             <label for="qrCodeURL">QR Code URL:</label>
             <input type="url" id="qrCodeURL" name="qrCodeURL" required/> <br><br>
@@ -25,9 +26,17 @@
             <button id="generateButton">Generate</button>
             <button id="resetButton">Reset</button>
         </div>
+
+        <h2>Generate a QR Code on top of a picture</h2>
+        <div id="qrInputs-img">
+            <label for="qrCodeURL-img">QR Code URL:</label>
+            <input type="url" id="qrCodeURL-img" name="qrCodeURL-img" required/> <br><br>
+            <button id="generateButton-img">Generate</button>
+            <button id="resetButton-img">Reset</button>
+        </div>
         
         <div id="result"></div>
-        
+
         <script type="module" src="ui/index.js"></script>
     </body>
 </html>

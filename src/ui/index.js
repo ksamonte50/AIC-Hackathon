@@ -124,4 +124,73 @@ addOnUISdk.ready.then(async () => {
         document.getElementById('qrAesthetic').value = '';
         document.getElementById('result').innerHTML = '';
     });
+
+    async function qrCodeOnImage() {
+        const url = document.getElementById('qrCodeURL-img').value;
+        
+        if (!url) {
+            document.getElementById('result').innerHTML = `
+                <div class="error">Please enter a valid URL first</div>
+            `;
+            return;
+        }
+
+        // Show loading state
+        document.getElementById('result').innerHTML = `
+            <div class="loading">Generating QR code...</div>
+        `;
+
+        try {
+            const response = await fetch('http://localhost:5001/generate-qr-on-img', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ url })
+            });
+
+            const data = await response.json();
+            console.log('Received response:', { success: data.success, error: data.error });
+
+            if (!response.ok || !data.success) {
+                throw new Error(data.error || "QR generation failed");
+            }
+
+            // Display the QR code with proper sizing
+            document.getElementById('result').innerHTML = `
+                <div class="qr-container">
+                    <h3>Generated QR Code on Image</h3>
+                    <img src="data:image/png;base64,${data.qrImage}" 
+                        alt="Generated QR Code on Image"
+                        class="qr-image">
+                </div>
+            `;
+
+            // Get the add-on container dimensions and resize if needed
+            const container = document.querySelector('.qr-container');
+            const containerWidth = container.clientWidth;
+            const img = container.querySelector('.qr-image');
+            if (img.naturalWidth > containerWidth) {
+                img.style.width = `${containerWidth - 20}px`; // 20px padding
+            }
+
+        } catch (error) {
+            document.getElementById('result').innerHTML = `
+                <div class="error">
+                    Failed to generate QR code: ${error.message}
+                </div>
+            `;
+            console.error('Error generating QR code:', error);
+        }
+    }
+
+    document.getElementById('generateButton-img').addEventListener('click', function(event) {
+        event.preventDefault();
+        qrCodeOnImage();
+    });
+
+    document.getElementById('resetButton-img').addEventListener('click', function() {
+        document.getElementById('qrCodeURL-img').value = '';
+        document.getElementById('result').innerHTML = '';
+    });
 });
