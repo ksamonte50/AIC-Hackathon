@@ -1,8 +1,12 @@
 {
     "testId": "3273cb52-90d3-414c-8582-9fdebc262ffc",
-    "name": "Hello World",
+    "name": "Prettify QR",
     "version": "1.0.0",
     "manifestVersion": 2,
+    "icons": {
+        "128": "assets/icon-128.png",
+        "512": "assets/icon-128.png"
+    },
     "requirements": {
         "apps": [
             {
