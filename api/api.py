@@ -122,7 +122,7 @@ def generate_qr_style():
                     "content": user_description
                 }
             ],
-            temperature=0.1,
+            temperature=0.5,
             response_format={"type": "json_object"}
         )
 
@@ -179,6 +179,56 @@ def generate_qr_style():
             "error": str(e),
             "type": type(e).__name__,
             "advice": "Check your color contrast and try again"
+        }
+        print("Error occurred:", json.dumps(error_response, indent=2))
+        print("Traceback:", traceback.format_exc())
+        return jsonify(error_response), 500
+    
+@app.route('/generate-qr-on-img', methods=['POST'])
+def imageBG():
+    data = request.json
+    print("Received request for QR with image:", json.dumps(data, indent=2))
+    target_url = data.get('url', '')
+
+    try:
+        # Configure QR code with image background
+        payload = {
+            "data": target_url,
+            "config": {
+                "body": "square",
+                "eye": "frame0",
+                "eyeBall": "ball0",
+                "bodyColor": "#000000",
+                "bgColor": "#FFFFFF",
+            },
+            "size": 500,
+            "file": "png",
+        }
+
+        print("QR API request:", json.dumps(payload, indent=2))
+        qr_response = requests.post(
+            "https://api.qrcode-monkey.com/qr/custom",
+            json=payload,
+            timeout=10
+        )
+
+        if qr_response.status_code != 200:
+            print(f"QR API error: Status {qr_response.status_code}")
+            raise ValueError(f"QR API error: {qr_response.status_code}")
+
+        response_data = {
+            "success": True,
+            "qrImage": base64.b64encode(qr_response.content).decode('utf-8'),
+            "imageType": "png"
+        }
+        print("Sending successful response with QR code")
+        return jsonify(response_data)
+
+    except Exception as e:
+        error_response = {
+            "error": str(e),
+            "type": type(e).__name__,
+            "advice": "Failed to generate QR code with image background"
         }
         print("Error occurred:", json.dumps(error_response, indent=2))
         print("Traceback:", traceback.format_exc())
