@@ -132,7 +132,7 @@ addOnUISdk.ready.then(async () => {
             document.getElementById('result').innerHTML = `
                 <div class="error">Please enter a valid URL first</div>
             `;
-            return;
+            return null;
         }
 
         // Show loading state
@@ -157,23 +157,23 @@ addOnUISdk.ready.then(async () => {
             }
 
             // Display the QR code with proper sizing
-            document.getElementById('result').innerHTML = `
-                <div class="qr-container">
-                    <h3>Generated QR Code on Image</h3>
-                    <img src="data:image/png;base64,${data.qrImage}" 
-                        alt="Generated QR Code on Image"
-                        class="qr-image">
-                </div>
-            `;
+            // document.getElementById('result').innerHTML = `
+            //     <div class="qr-container">
+            //         <h3>Generated QR Code on Image</h3>
+            //         <img src="data:image/png;base64,${data.qrImage}" 
+            //             alt="Generated QR Code on Image"
+            //             class="qr-image">
+            //     </div>
+            // `;
 
             // Get the add-on container dimensions and resize if needed
-            const container = document.querySelector('.qr-container');
-            const containerWidth = container.clientWidth;
-            const img = container.querySelector('.qr-image');
-            if (img.naturalWidth > containerWidth) {
-                img.style.width = `${containerWidth - 20}px`; // 20px padding
-            }
-
+            // const container = document.querySelector('.qr-container');
+            // const containerWidth = container.clientWidth;
+            // const img = container.querySelector('.qr-image');
+            // if (img.naturalWidth > containerWidth) {
+            //     img.style.width = `${containerWidth - 20}px`; // 20px padding
+            // }
+            return data.qrImage;
         } catch (error) {
             document.getElementById('result').innerHTML = `
                 <div class="error">
@@ -181,6 +181,7 @@ addOnUISdk.ready.then(async () => {
                 </div>
             `;
             console.error('Error generating QR code:', error);
+            return null;
         }
     }
 
