@@ -3,6 +3,11 @@ import os
 from dotenv import load_dotenv, find_dotenv
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import json
+import requests
+import re
+import traceback
+import base64
 
 app = Flask(__name__)
 CORS(app)
@@ -10,59 +15,86 @@ CORS(app)
 _ = load_dotenv(find_dotenv())
 client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
+def extract_json_from_ai_response(raw_text):
+    """Parse OpenAI response into JSON"""
+    try:
+        return json.loads(raw_text)
+    except json.JSONDecodeError:
+        match = re.search(r'\{.*\}', raw_text, re.DOTALL)
+        if match:
+            return json.loads(match.group(0))
+        raise ValueError(f"Could not parse JSON from: {raw_text[:200]}")
+
 @app.route('/generate-qr', methods=['POST'])
 def generate_qr_style():
     data = request.json
     user_description = data.get('aesthetic', '')
-    
-    completion = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {
-                "role": "system",
-                "content": """You are a QR code style designer. Given a description, output a valid JSON object with double quotes for all property names and string values. The JSON should specify:
-                {
-                    "color": "#XXXXXX" (hex color code),
-                    "backgroundColor": "#XXXXXX" (hex color code),
-                    "dotStyle": "string",
-                    "cornerStyle": "string",
-                    "gradient": "string" (optional)
-                }
-                Always use 6-digit hex color codes with the # prefix for colors (e.g. "#FF0000" for red, "#FFFFFF" for white).
-                Only output the raw JSON, no markdown formatting or explanation."""
-            },
-            {
-                "role": "user",
-                "content": user_description
-            }
-        ]
-    )
-    
-    response_content = completion.choices[0].message.content.strip()
+    target_url = data.get('url', '')
+
     try:
-        # Try to parse the JSON to validate it
-        import json
-        style_json = json.loads(response_content)
-        
-        # Validate that colors are hex codes
-        for color_field in ['color', 'backgroundColor']:
-            if color_field in style_json:
-                color = style_json[color_field]
-                if not color.startswith('#') or len(color) != 7:
-                    return jsonify({
-                        "error": f"Invalid hex color code for {color_field}",
-                        "raw_response": response_content
-                    }), 400
-        
+        # Step 1: Get style from OpenAI
+        completion = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {
+                    "role": "system",
+                    "content": """Output ONLY JSON with these EXACT fields:
+                    {
+                        "color": "#RRGGBB",
+                        "backgroundColor": "#RRGGBB", 
+                        "dotStyle": "rounded" or "square"
+                    }"""
+                },
+                {
+                    "role": "user",
+                    "content": user_description
+                }
+            ],
+            temperature=0.1,
+            response_format={"type": "json_object"}
+        )
+
+        style_json = extract_json_from_ai_response(completion.choices[0].message.content)
+
+        # Step 2: Generate QR code
+        payload = {
+            "data": target_url,
+            "config": {
+                "body": style_json['dotStyle'],
+                "eye": "frame0",
+                "eyeBall": "ball0",
+                "bodyColor": style_json['color'],
+                "bgColor": style_json['backgroundColor'],
+                "gradientType": "none",
+                "gradientOnEyes": False
+            },
+            "size": 800,
+            "file": "png"
+        }
+
+        qr_response = requests.post(
+            "https://api.qrcode-monkey.com/qr/custom",
+            json=payload,
+            timeout=10
+        )
+
+        if qr_response.status_code != 200:
+            raise ValueError(f"QR API error: {qr_response.status_code}")
+
+        # Return the PNG image directly as base64
         return jsonify({
-            "style": style_json,
-            "url": data.get('url', '')
+            "success": True,
+            "qrImage": base64.b64encode(qr_response.content).decode('utf-8'),
+            "imageType": "png",
+            "style": style_json
         })
-    except json.JSONDecodeError:
+
+    except Exception as e:
         return jsonify({
-            "error": "Invalid JSON response from AI",
-            "raw_response": response_content
-        }), 400
+            "error": str(e),
+            "type": type(e).__name__,
+            "advice": "Check your input and try again"
+        }), 500
 
 if __name__ == '__main__':
     app.run(port=5001, debug=True)

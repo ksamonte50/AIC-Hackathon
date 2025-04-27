@@ -3,11 +3,7 @@ import addOnUISdk from "https://new.express.adobe.com/static/add-on-sdk/sdk.js";
 addOnUISdk.ready.then(async () => {
     console.log("addOnUISdk is ready for use.");
 
-    // Get the UI runtime.
     const { runtime } = addOnUISdk.instance;
-
-    // Get the proxy object, which is required
-    // to call the APIs defined in the Document Sandbox runtime
     const sandboxProxy = await runtime.apiProxy("documentSandbox");
 
     async function generateResponse() {
@@ -17,16 +13,14 @@ addOnUISdk.ready.then(async () => {
         console.log('Sending request with:', { url, aesthetic });
 
         try {
+            // Step 1: Send request to our backend
             const response = await fetch('http://localhost:5001/generate-qr', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify({
-                    url: url,
-                    aesthetic: aesthetic
-                })
+                body: JSON.stringify({ url, aesthetic })
             });
 
             if (!response.ok) {
@@ -34,19 +28,35 @@ addOnUISdk.ready.then(async () => {
             }
 
             const data = await response.json();
-            console.log('Received response:', data);
+            console.log('Received response from backend:', data);
 
-            document.getElementById('result').innerHTML = `
-                <h3>Generated QR Code Style:</h3>
-                <pre>${JSON.stringify(data.style, null, 2)}</pre>
-            `;
+            // Step 2: Display the QR code directly from base64 data
+            if (data.success && data.qrImage) {
+                document.getElementById('result').innerHTML = `
+                    <h3>Your Custom QR Code:</h3>
+                    <img src="data:image/png;base64,${data.qrImage}" 
+                        alt="Generated QR Code" 
+                        style="max-width: 100%; height: auto;"/>
+                    <div class="style-info">
+                        <p>Color: ${data.style.color}</p>
+                        <p>Background: ${data.style.backgroundColor}</p>
+                        <p>Dot Style: ${data.style.dotStyle}</p>
+                    </div>
+                `;
+            } else {
+                throw new Error('Invalid response from server');
+            }
+
         } catch (error) {
             console.error('Detailed error:', error);
-            document.getElementById('result').innerHTML = `Error generating QR code style: ${error.message}`;
+            document.getElementById('result').innerHTML = `
+                <div class="error">
+                    Error generating QR code: ${error.message}
+                </div>
+            `;
         }
     }
 
-    // Set up event listeners
     document.getElementById('generateButton').addEventListener('click', function(event) {
         event.preventDefault();
         generateResponse();
@@ -57,15 +67,4 @@ addOnUISdk.ready.then(async () => {
         document.getElementById('qrAesthetic').value = '';
         document.getElementById('result').innerHTML = '';
     });
-
-    const createRectangleButton = document.getElementById("createRectangle");
-    createRectangleButton.addEventListener("click", async event => {
-        await sandboxProxy.createRectangle();
-    });
-
-    // Enable the button only when:
-    // 1. `addOnUISdk` is ready,
-    // 2. `sandboxProxy` is available, and
-    // 3. `click` event listener is registered.
-    createRectangleButton.disabled = false;
 });
