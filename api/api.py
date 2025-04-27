@@ -28,22 +28,49 @@ def extract_json_from_ai_response(raw_text):
 @app.route('/generate-qr', methods=['POST'])
 def generate_qr_style():
     data = request.json
+    print("Received request:", json.dumps(data, indent=2))
     user_description = data.get('aesthetic', '')
     target_url = data.get('url', '')
 
     try:
         # Step 1: Get style from OpenAI
         completion = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o-mini",
             messages=[
                 {
                     "role": "system",
-                    "content": """Output ONLY JSON with these EXACT fields:
+                    "content": """You are a QR code style designer. Given a description, output ONLY JSON with these EXACT fields:
                     {
-                        "color": "#RRGGBB",
-                        "backgroundColor": "#RRGGBB", 
-                        "dotStyle": "rounded" or "square"
-                    }"""
+                        "dotStyle": "square", 
+                                    "mosaic", 
+                                    "dot", 
+                                    "circle", 
+                                    "circle-zebra", 
+                                    "circle-zebra-vertical", 
+                                    "circular", 
+                                    "edge-cut", 
+                                    "edge-cut-smooth", 
+                                    "japnese", 
+                                    "leaf", 
+                                    "pointed", 
+                                    "pointed-edge-cut", 
+                                    "pointed-in", 
+                                    "pointed-in-smooth", 
+                                    "pointed-smooth", 
+                                    "round", 
+                                    "rounded-in", 
+                                    "rounded-in-smooth", 
+                                    "rounded-pointed", 
+                                    "star", or
+                                    "diamond", // Shape of the dots
+                        "eyeStyle": "frame#", // Shape of the eye squares (# should be replaced with a number between 0 to 16)
+                        "eyeBallStyle": "ball#", // Shape of the eye balls (# should be replaced with a number between 0 to 19)
+                        "bodyColor": "#RRGGBB",  // Main dots color
+                        "bgColor": "#RRGGBB",    // Background color
+                        "eyeColor": "#RRGGBB",   // Color of the eyes as HEX values.
+                        "eyeBallColor": "#RRGGBB", // Color of the eye balls as HEX values.
+                    }
+                    Ensure colors have sufficient contrast for QR scanning."""
                 },
                 {
                     "role": "user",
@@ -55,23 +82,30 @@ def generate_qr_style():
         )
 
         style_json = extract_json_from_ai_response(completion.choices[0].message.content)
+        print("OpenAI response:", json.dumps(style_json, indent=2))
 
-        # Step 2: Generate QR code
+        # Step 2: Generate QR code with proper color configuration
         payload = {
             "data": target_url,
             "config": {
                 "body": style_json['dotStyle'],
-                "eye": "frame0",
-                "eyeBall": "ball0",
-                "bodyColor": style_json['color'],
-                "bgColor": style_json['backgroundColor'],
-                "gradientType": "none",
-                "gradientOnEyes": False
+                "eye": style_json['eyeStyle'],
+                "eyeBall": style_json['eyeBallStyle'],
+                "bodyColor": style_json['bodyColor'],
+                "bgColor": style_json['bgColor'],
+                "eye1Color": style_json['eyeColor'],  # Color for all three eye squares
+                "eye2Color": style_json['eyeColor'],
+                "eye3Color": style_json['eyeColor'],
+                "eyeBall1Color": style_json['eyeBallColor'],
+                "eyeBall2Color": style_json['eyeBallColor'],
+                "eyeBall3Color": style_json['eyeBallColor'],
+                "gradientType": "none"
             },
             "size": 800,
             "file": "png"
         }
 
+        print("QR API request:", json.dumps(payload, indent=2))
         qr_response = requests.post(
             "https://api.qrcode-monkey.com/qr/custom",
             json=payload,
@@ -79,22 +113,27 @@ def generate_qr_style():
         )
 
         if qr_response.status_code != 200:
+            print(f"QR API error: Status {qr_response.status_code}")
             raise ValueError(f"QR API error: {qr_response.status_code}")
 
-        # Return the PNG image directly as base64
-        return jsonify({
+        response_data = {
             "success": True,
             "qrImage": base64.b64encode(qr_response.content).decode('utf-8'),
             "imageType": "png",
             "style": style_json
-        })
+        }
+        print("Sending successful response with QR code")
+        return jsonify(response_data)
 
     except Exception as e:
-        return jsonify({
+        error_response = {
             "error": str(e),
             "type": type(e).__name__,
-            "advice": "Check your input and try again"
-        }), 500
+            "advice": "Check your color contrast and try again"
+        }
+        print("Error occurred:", json.dumps(error_response, indent=2))
+        print("Traceback:", traceback.format_exc())
+        return jsonify(error_response), 500
 
 if __name__ == '__main__':
     app.run(port=5001, debug=True)

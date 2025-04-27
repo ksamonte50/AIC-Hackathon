@@ -6,52 +6,114 @@ addOnUISdk.ready.then(async () => {
     const { runtime } = addOnUISdk.instance;
     const sandboxProxy = await runtime.apiProxy("documentSandbox");
 
+    // Set up responsive container styles
+    const style = document.createElement('style');
+    style.textContent = `
+        .qr-container {
+            max-width: 100%;
+            overflow: auto;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .qr-image {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+        .qr-details {
+            margin-top: 10px;
+            font-size: 14px;
+            word-break: break-word;
+        }
+        .error {
+            color: #d32f2f;
+            padding: 10px;
+        }
+        .loading {
+            padding: 10px;
+            text-align: center;
+        }
+    `;
+    document.head.appendChild(style);
+
     async function generateResponse() {
         const url = document.getElementById('qrCodeURL').value;
         const aesthetic = document.getElementById('qrAesthetic').value;
 
-        console.log('Sending request with:', { url, aesthetic });
+        if (!url) {
+            document.getElementById('result').innerHTML = `
+                <div class="error">Please enter a valid URL first</div>
+            `;
+            return;
+        }
+
+        // Show loading state
+        document.getElementById('result').innerHTML = `
+            <div class="loading">Generating QR code...</div>
+        `;
 
         try {
-            // Step 1: Send request to our backend
+            const requestBody = { 
+                url, 
+                aesthetic: aesthetic || "black dots on white background" 
+            };
+            console.log('Sending request:', requestBody);
+
             const response = await fetch('http://localhost:5001/generate-qr', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
+                    'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ url, aesthetic })
+                body: JSON.stringify(requestBody)
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+            const data = await response.json();
+            console.log('Received response:', { 
+                success: data.success, 
+                style: data.style,
+                error: data.error 
+            });
+
+            if (!response.ok || !data.success) {
+                throw new Error(data.error || "QR generation failed");
             }
 
-            const data = await response.json();
-            console.log('Received response from backend:', data);
-
-            // Step 2: Display the QR code directly from base64 data
-            if (data.success && data.qrImage) {
-                document.getElementById('result').innerHTML = `
-                    <h3>Your Custom QR Code:</h3>
+            // Display the QR code with proper sizing
+            document.getElementById('result').innerHTML = `
+                <div class="qr-container">
                     <img src="data:image/png;base64,${data.qrImage}" 
-                        alt="Generated QR Code" 
-                        style="max-width: 100%; height: auto;"/>
-                    <div class="style-info">
-                        <p>Color: ${data.style.color}</p>
-                        <p>Background: ${data.style.backgroundColor}</p>
-                        <p>Dot Style: ${data.style.dotStyle}</p>
+                        alt="Generated QR Code"
+                        class="qr-image">
+                    <div class="qr-details">
+                        <p><strong>Colors:</strong></p>
+                        <p>Dots: <span style="color:${data.style.bodyColor}">${data.style.bodyColor}</span></p>
+                        <p>Background: <span style="color:${data.style.bgColor}">${data.style.bgColor}</span></p>
+                        <p>Style: ${data.style.dotStyle} dots</p>
                     </div>
-                `;
-            } else {
-                throw new Error('Invalid response from server');
+                </div>
+            `;
+
+            // Get the add-on container dimensions
+            const container = document.querySelector('.qr-container');
+            const containerWidth = container.clientWidth;
+            
+            // Dynamically resize the image if needed
+            const img = document.querySelector('.qr-image');
+            if (img.naturalWidth > containerWidth) {
+                img.style.width = `${containerWidth - 20}px`; // 20px padding
             }
 
         } catch (error) {
-            console.error('Detailed error:', error);
             document.getElementById('result').innerHTML = `
                 <div class="error">
-                    Error generating QR code: ${error.message}
+                    <p>Failed to generate QR code: ${error.message}</p>
+                    <p>Try these formats:</p>
+                    <ul>
+                        <li>"black dots on white background"</li>
+                        <li>"dark blue dots on light gray background"</li>
+                        <li>"#14213D dots on #FFF8E8 background"</li>
+                    </ul>
                 </div>
             `;
         }
