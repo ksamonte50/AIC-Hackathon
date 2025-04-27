@@ -9,6 +9,18 @@
         <meta name="keywords" content="Adobe, Express, Add-On, JavaScript, Document Sandbox Runtime" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="stylesheet" href="styles/styles.css" />
+        <script type="module" src="ui/elements.js"></script>
+
+        <link rel="stylesheet" href="node_modules/@spectrum-css/button/dist/index-vars.css">
+        <link rel="stylesheet" href="node_modules/@spectrum-css/textfield/dist/index-vars.css">
+        <link rel="stylesheet" href="node_modules/@spectrum-css/fieldlabel/dist/index-vars.css"> 
+
+        <script src="https://use.typekit.net/mge7bvf.js"></script>
+        <script>window.Typekit.load()</script>
+
+        <script src="node_modules/@adobe/focus-ring-polyfill/index.js"></script>
+
+
         <title>Prettify QR</title>
     </head>
     <body>
@@ -16,18 +28,38 @@
             Please note that this document does not use the spectrum web components theme for Express.
             You may use "addOnUISdk.app.ui.theme" to get the current theme and style accordingly.
         -->
-        <h1>Prettify QR</h1>
-        <div id="qrInputs">
-            <label for="qrCodeURL">QR Code URL:</label>
-            <input type="url" id="qrCodeURL" name="qrCodeURL" required/> <br><br>
-            <label for="qrAesthetic">QR Code Aesthetic:</label>
-            <input type="text" id="qrAesthetic" name="qrAesthetic" required/> <br><br>
-            <button id="generateButton">Generate</button>
-            <button id="resetButton">Reset</button>
-        </div>
+        <!-- .spectrum-Typography will apply margins to all typography components like headings. -->
+        <main class="spectrum-Typography">
+            <h1 class="spectrum-Heading spectrum-Heading--M" id="mainTitle">Prettify QR</h1>
+            <form class="spectrum-Form spectrum-Form--labelsAbove" aria-labelledby="login-label" id="mainTitle">
+            <div class="spectrum-Form-item">
+                <label for="qrCodeURL" class="spectrum-Form-itemLabel spectrum-FieldLabel--left">QR Code URL:</label>
+                <div class="spectrum-Form-itemField">
+                <input class="spectrum-Textfield" id="qrCodeURL" placeholder="Enter your URL" name="qrCodeURL"/>
+                </div>
+            </div>
+            <div class="spectrum-Form-item">
+                <label class="spectrum-Form-itemLabel spectrum-FieldLabel--left" for="qrCodeAesthetic">QR Code Aesthetic:</label>
+                <div class="spectrum-Form-itemField">
+                <input class="spectrum-Textfield" type="text" placeholder="Describe the aesthetic" id="qrCodeAesthetic">
+                </div>
+            </div>
+            <div class="spectrum-Form-item">
+            </div>
+            
+            <button type="submit" class="spectrum-Button spectrum-Button--cta">
+                <span class="spectrum-Button-label">Generate</span>
+            </button>
+
+            <button type="reset" class="spectrum-Button spectrum-Button--secondary">
+                <span class="spectrum-Button-label">Reset</span>
+            </button>
+            </form>
+        </main>
         
         <div id="result"></div>
         
         <script type="module" src="ui/index.js"></script>
+        
     </body>
 </html>
