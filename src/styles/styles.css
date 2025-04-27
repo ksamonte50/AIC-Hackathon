@@ -18,7 +18,7 @@ body {
 main.spectrum-Typography {
     width: auto;
     max-width: 275px;
-    margin: 4rem auto;
+    margin: 1rem auto;
     padding: 2rem 1.5rem;
     background-color: white;
     border-radius: 16px;
@@ -53,7 +53,6 @@ main.spectrum-Typography {
 form {
     display: flex;
     flex-direction: column;
-    align-items; center;
     gap: 1rem;
     margin-top: 1.5rem;
 }
@@ -86,6 +85,7 @@ form {
 /* Hover and click effects */
 .spectrum-Button:hover {
     transform: translateY(-2px);
+    cursor: pointer;
 }
 
 .spectrum-Button:first-of-type:hover {
