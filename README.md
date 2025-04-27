@@ -5,7 +5,7 @@ We take the boring, old, black and white QR codes and "prettify" them. This add-
 How do you use it?
 1) Copy and pasty the URL you want linked to the QR code
 2) Enter the prompt of the vibe you want OR upload an image for your QR code
-    Example prompt: "sunset pastels with rounded edges and dots" 
+    - Example prompt: "sunset pastels with rounded edges and dots" 
 4) Get an AI-stylized QR code
 
 - - - - -
