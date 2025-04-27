@@ -9,6 +9,8 @@
         <meta name="keywords" content="Adobe, Express, Add-On, JavaScript, Document Sandbox Runtime" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="stylesheet" href="styles/styles.css" />
+        <script type="module" src="ui/elements.js"></script>
+
         <title>Prettify QR</title>
     </head>
     <body>
@@ -16,18 +18,39 @@
             Please note that this document does not use the spectrum web components theme for Express.
             You may use "addOnUISdk.app.ui.theme" to get the current theme and style accordingly.
         -->
+        <sp-theme 
+            system="express" 
+            scale="medium" 
+            color="light" 
+        > 
         <h1>Prettify QR</h1>
         <div id="qrInputs">
-            <label for="qrCodeURL">QR Code URL:</label>
-            <input type="url" id="qrCodeURL" name="qrCodeURL" required/> <br><br>
-            <label for="qrAesthetic">QR Code Aesthetic:</label>
-            <input type="text" id="qrAesthetic" name="qrAesthetic" required/> <br><br>
-            <button id="generateButton">Generate</button>
-            <button id="resetButton">Reset</button>
+            <sp-field-label for="qrCodeURL">QR Code URL:</sp-field-label><br><br>
+            <sp-textfield 
+                type="url"  
+                id="qrCodeURL"
+                name="qrCodeURL" 
+                placeholder="Enter URL..."
+                required
+            >
+            </sp-textfield><br><br>
+            <sp-field-label for="qrAesthetic">QR Code Aesthetic:</sp-field-label><br><br>
+            <sp-textfield 
+                id="qrAesthetic" 
+                name="qrAesthetic" 
+                multiline
+                placeholder="Enter Aesthetic..."
+                required
+            >
+            </sp-textfield> <br><br>
+            <sp-button id="generateButton" variant="primary">Generate</sp-button>
+            <sp-button id="resetButton" variant="secondary">Reset</sp-button>
         </div>
         
         <div id="result"></div>
         
         <script type="module" src="ui/index.js"></script>
+        
+    </sp-theme>
     </body>
 </html>
