@@ -245,12 +245,17 @@ addOnUISdk.ready.then(async () => {
     const ctx = canvas.getContext("2d");
     //<canvas id="qrCodeCanvas" width="500px" height="500px" style="display: block;"></canvas>
     const qrCodeCanvas = document.createElement("CANVAS");
-    qrCodeCanvas.width = 1000;
-    qrCodeCanvas.height = 1000;
+    const qrSize = 1000
+    qrCodeCanvas.width = qrSize;
+    qrCodeCanvas.height = qrSize;
     qrCodeCanvas.style.display = "none";
+    
+    // document.body.appendChild(qrCodeCanvas);
+
     const qrCodeCTX = qrCodeCanvas.getContext("2d");
     var size = 500;
     var dotSize = document.getElementById("numberDotSize").value;
+    var dotType = "circle";
     var image;
     const imageStats = {
         "sx": 0,
@@ -268,12 +273,13 @@ addOnUISdk.ready.then(async () => {
     const colors = {
         "primary": "#000000",
         "secondary": "#FFFFFF",
-        "bg": "#FFFFFF"
+        "bg": "#FFFFFF",
     }
 
     var inc, startX, startY, endX, endY, width, gridSize;
     var qrCodeReady = false;
     var qrCodeCreated = false;
+    var eyeOpacity = document.getElementById("numberEyeOpacity").value;
     var opacity = 1.0;
     var qrData = [];
 
@@ -294,28 +300,50 @@ addOnUISdk.ready.then(async () => {
         }
         qrcode.src = `data:image/png;base64,${imgData}`;
         qrcode.onload = function() {
-            qrCodeCTX.drawImage(qrcode, 0, 0, 1000, 1000);
+            qrCodeCTX.drawImage(qrcode, 0, 0, qrSize, qrSize);
             document.body.appendChild(qrCodeCanvas);
-            console.log(qrcode);
+            //console.log(qrcode);
             // find top left corner of top left eye
             let pos = 0;
             let pixel = qrCodeCTX.getImageData(pos, pos, 1, 1);
             
-
+            // find top left pixel
             while(pixel.data[0] != 0 && pixel.data[1] != 0 && pixel.data[2] != 0 && pixel.data[3]) {
                 pos++;
                 pixel = qrCodeCTX.getImageData(pos, pos, 1, 1);
             }
 
+            console.log("first: " + pixel.data[0] + " " + pixel.data[1] + " " + pixel.data[2] + " " + pixel.data[3]);
+
             // measure how big the eye is
             let x = pos;
-            while(pixel.data[0] == 0 && pixel.data[1] == 0 && pixel.data[2] == 0) { // ONLY WORKS FOR BLACK QR CODES
+            // let testPosY = pos;
+            // let testPosX = pos;
+            // let testPixel;
+            // do {
+            //     testPosY--;
+            //     testPixel = qrCodeCTX.getImageData(x, testPosY, 1, 1); 
+            // } while (testPixel.data[0] == 255 && testPixel.data[1] == 255 && testPixel.data[2] == 255);
+
+            // do {
+            //     testPosX--;
+            //     testPixel = qrCodeCTX.getImageData(testPosX, pos, 1, 1); 
+            // } while (testPixel.data[0] == 255 && testPixel.data[1] == 255 && testPixel.data[2] == 255);
+
+            // console.log("X: " + x + "; Y: " + pos);
+            // console.log("X: " + testPosX + 1 + "; Y: " + testPosY + 1);
+
+
+
+
+
+            while(pixel.data[0] != 255 && pixel.data[1] != 255 && pixel.data[2] != 255) { // ONLY WORKS FOR BLACK QR CODES
                 x++;
                 pixel = qrCodeCTX.getImageData(x, pos, 1, 1);
-
             }
-            // qrCodeCTX.fillStyle = "red";
-            // qrCodeCTX.fillRect(pos, pos, x-pos, 2);
+
+            // console.log("last: " + pixel.data[0] + " " + pixel.data[1] + " " + pixel.data[2] + " " + pixel.data[3]);
+            
 
             // make all constants using found values
             // we know that all eyes are 7 dots wide.
@@ -335,7 +363,7 @@ addOnUISdk.ready.then(async () => {
             // from QRcode monkey will have the same size of 1000px. We can count back
             // from right using the pos to find the top right of the top right eye.
 
-            endX = size*2 - pos;
+            endX = qrSize - pos;
             width = endX-startX;
             gridSize = Math.floor(width / inc)+1; //36
 
@@ -429,7 +457,6 @@ addOnUISdk.ready.then(async () => {
         }
     }
 
-
     function drawQRCode() {
         if(!qrCodeReady) {
             console.log("Upload a url first!")
@@ -437,51 +464,95 @@ addOnUISdk.ready.then(async () => {
         }
         canvas.style = "border: 1px solid black; background-color: " + colors["bg"] + "; margin: 20px;";
         ctx.clearRect(0, 0, size, size);
+        ctx.fillStyle = colors["bg"];
+        ctx.fillRect(0, 0, size, size);
         ctx.globalAlpha = opacity;
         ctx.drawImage(image, imageStats["sx"], imageStats["sy"], imageStats["swidth"], imageStats["sheight"], imageStats["x"], imageStats["y"], imageStats["width"], imageStats["height"]);
         ctx.globalAlpha = 1.0;
         // DRAW QR CODE
-        ctx.fillStyle = colors["primary"];
+
         // top left eye
+        ctx.fillStyle = colors["secondary"];
+        ctx.globalAlpha = eyeOpacity;
+        ctx.fillRect(startX - inc/2 + inc*-1, startY - inc/2 + inc*-1, inc*9, inc*9); // pupil secondary
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = colors["primary"];
+
         ctx.fillRect(startX - inc/2, startY - inc/2, inc*7, inc); // top
         ctx.fillRect(startX - inc/2, startY - inc/2, inc, inc*7); // left
 
         ctx.fillRect(startX - inc/2, startY - inc/2 + inc*6, inc*7, inc); // bottom
         ctx.fillRect(startX - inc/2 + inc*6, startY - inc/2, inc, inc*7); // right
-
-        ctx.fillRect(startX - inc/2 + inc*2, startY - inc/2 + inc*2, inc*3, inc*3); // pupil
+        
+        ctx.fillRect(startX - inc/2 + inc*2, startY - inc/2 + inc*2, inc*3, inc*3); // pupil primary
 
         // top right eye
+        ctx.fillStyle = colors["secondary"];
+        ctx.globalAlpha = eyeOpacity;
+        ctx.fillRect(endX - inc*7.5, startY + -1.5*inc, inc*9, inc*9); // pupil secondary
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = colors["primary"];
+
         ctx.fillRect(endX - inc * 6.5, startY - inc * 0.5, inc * 7, inc); // top
         ctx.fillRect(endX - inc * 6.5, startY - inc * 0.5, inc, inc * 7); // left
 
         ctx.fillRect(endX - inc * 6.5, startY + inc * 5.5, inc*7, inc); // bottom
         ctx.fillRect(endX - inc * 0.5, startY - inc * 0.5, inc, inc*7); // right
 
-        ctx.fillRect(endX - inc*4.5, startY + 1.5*inc, inc*3, inc*3); // pupil
+        ctx.fillRect(endX - inc*4.5, startY + 1.5*inc, inc*3, inc*3); // pupil primary
 
         // bottom left eye
+        ctx.fillStyle = colors["secondary"];
+        ctx.globalAlpha = eyeOpacity;
+        ctx.fillRect(startX - inc*1.5, endY - inc*7.5, inc*9, inc*9); // pupil secondary
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = colors["primary"];
+
         ctx.fillRect(startX - inc * 0.5, endY - inc*6.5, inc*7, inc); // top
         ctx.fillRect(startX - inc * 0.5, endY - inc*6.5, inc, inc*7); // left
 
         ctx.fillRect(startX - inc/2, endY-inc*0.5, inc*6.5, inc); // bottom
         ctx.fillRect(startX - inc/2 + inc * 6, endY-inc*6.5, inc, inc*7); // right
 
-        ctx.fillRect(startX - inc/2 + inc*2, endY - inc*4.5, inc*3, inc*3); // pupil
+        ctx.fillRect(startX - inc/2 + inc*2, endY - inc*4.5, inc*3, inc*3); // pupil primary
 
-        // bottom right eye
+        // bottom right eye full size!
+        ctx.fillStyle = colors["secondary"];
+        ctx.globalAlpha = eyeOpacity;
+        ctx.fillRect(endX-inc*7.5, endY-inc*7.5, inc*2+inc, inc*2+inc); // pupil
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = colors["primary"];
 
-        ctx.fillRect(endX - 8*inc - dotSize - 1, endY - 8*inc - dotSize - 1, inc*4+dotSize*2+2, dotSize*2+2); // top
-        ctx.fillRect(endX-inc*8-dotSize-1, endY-inc*8 - dotSize - 1, dotSize*2+2, inc*4+dotSize*2+2); // left
+        ctx.fillRect(endX - 8.5*inc, endY - 8.5*inc, inc*4+inc, inc); // top
+        ctx.fillRect(endX-inc*8.5, endY-inc*8.5, inc, inc*4+inc); // left
 
-        ctx.fillRect(endX-inc*8-dotSize-1, endY-inc*4-dotSize-1, inc*4+dotSize*2+2, dotSize*2+2); // bottom
-        ctx.fillRect(endX-inc*4-dotSize-1, endY-inc*8-dotSize-1, dotSize*2+2, inc*4+dotSize*2+2); // right
+        ctx.fillRect(endX-inc*8.5, endY-inc*4.5, inc*4+inc, inc); // bottom
+        ctx.fillRect(endX-inc*4.5, endY-inc*8.5, inc, inc*4+inc); // right
 
-        ctx.fillRect(endX-inc*6-dotSize-1, endY-inc*6-dotSize-1, dotSize*2+2, dotSize*2+2); // pupil
+        ctx.fillRect(endX-inc*6.5, endY-inc*6.5, inc, inc); // pupil
+
+        // bottom right eye dot sized!
+            // ctx.fillRect(endX - 8*inc - dotSize - 1, endY - 8*inc - dotSize - 1, inc*4+dotSize*2+2, dotSize*2+2); // top
+            // ctx.fillRect(endX-inc*8-dotSize-1, endY-inc*8 - dotSize - 1, dotSize*2+2, inc*4+dotSize*2+2); // left
+
+            // ctx.fillRect(endX-inc*8-dotSize-1, endY-inc*4-dotSize-1, inc*4+dotSize*2+2, dotSize*2+2); // bottom
+            // ctx.fillRect(endX-inc*4-dotSize-1, endY-inc*8-dotSize-1, dotSize*2+2, inc*4+dotSize*2+2); // right
+
+            // ctx.fillStyle = colors["secondary"];
+            // ctx.globalAlpha = eyeOpacity;
+            // ctx.fillRect(endX-inc*7-dotSize-1, endY-inc*7-dotSize-1, inc*2+dotSize*2+2, inc*2+dotSize*2+2); // pupil
+            // ctx.globalAlpha = 1;
+            // ctx.fillStyle = colors["primary"];
+            // ctx.fillRect(endX-inc*6-dotSize-1, endY-inc*6-dotSize-1, dotSize*2+2, dotSize*2+2); // pupil
+
+        // get dot type
+        if(document.getElementById("circle").checked) dotType = "circle";
+        else dotType = "square";
 
         // dots
         let col = 0;
         let maxCol = gridSize;
+
         for(let row = 0; row < gridSize; row++) {
             if(row < 8) {
                 col = 8;
@@ -493,24 +564,35 @@ addOnUISdk.ready.then(async () => {
                 col = 0;
                 maxCol = gridSize;
             }
+
             for(; col < maxCol; col++) {
-                if(qrData[row][col]) 
-                    drawCircle(startX+inc*col, startY+inc*row, colors["primary"]);
-                else 
-                    drawCircle(startX+inc*col, startY+inc*row, colors["secondary"]);
+                let xpos = startX+inc*col;
+                let ypos = startY+inc*row;
+
+                if(qrData[row][col]) { // dark
+                    drawDot(xpos, ypos, colors["primary"], "square");
+                }
+                else { // light
+                    drawDot(xpos, ypos, colors["secondary"], "square");
+                }
             }
         }
         qrCodeCreated = true;
         return;
     }
 
-    function drawCircle(x, y, color) {
-        ctx.beginPath();
-        ctx.arc(x, y, dotSize, 0, 2 * Math.PI);
-        ctx.fillStyle = color;
-        ctx.fill();
-        ctx.strokeStyle = color;
-        ctx.stroke();
+    function drawDot(x, y, color) {
+        if(dotType == "circle"){
+            ctx.beginPath();
+            ctx.arc(x, y, dotSize, 0, 2 * Math.PI);
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.strokeStyle = color;
+            ctx.stroke();
+        } else if (dotType == "square") {
+            ctx.fillStyle = color;
+            ctx.fillRect(x - dotSize, y - dotSize, dotSize*2, dotSize*2);
+        }
     }
 
     // MAKE SURE TO ONCHANGE AND IMAGE SLIDERS.s
@@ -537,10 +619,15 @@ addOnUISdk.ready.then(async () => {
     const secondaryColorInput = document.getElementById("secondaryColor");
     const bgColorInput = document.getElementById("bgColor");
 
+    const numberEyeOpacity = document.getElementById("numberEyeOpacity");
+    const sliderEyeOpacity = document.getElementById("sliderEyeOpacity");
+
     var input = document.getElementById("input");
     input.onchange = () => {
-        document.body.style.zoom = "55%";
+        // document.body.style.zoom = "55%";
         ctx.clearRect(0, 0, size, size);
+        ctx.fillStyle = colors["bg"];
+        ctx.fillRect(0, 0, size, size);
         canvas.style.display = "block";
         if(FileReader) {
             let reader = new FileReader();
@@ -549,8 +636,6 @@ addOnUISdk.ready.then(async () => {
             reader.readAsDataURL(input.files[0]);
             reader.onload = function(e) {
                 image.src= e.target.result;
-                console.log("Img:");
-                console.log(image);
                 image.onload = function() {
                     imageStats.maxWidth = image.width;
                     imageStats.maxHeight = image.height;
@@ -648,6 +733,8 @@ addOnUISdk.ready.then(async () => {
             if(qrCodeCreated) drawQRCode();
             else {
                 ctx.clearRect(0, 0, size, size);
+                ctx.fillStyle = colors["bg"];
+                ctx.fillRect(0, 0, size, size);
                 ctx.globalAlpha = opacity;
                 ctx.drawImage(image, imageStats["sx"], imageStats["sy"], imageStats["swidth"], imageStats["sheight"], imageStats["x"], imageStats["y"], imageStats["width"], imageStats["height"]);
                 ctx.globalAlpha = 1.0;
@@ -699,6 +786,8 @@ addOnUISdk.ready.then(async () => {
             drawQRCode();
         } else if(image) {
             ctx.clearRect(0, 0, size, size);
+            ctx.fillStyle = colors["bg"];
+            ctx.fillRect(0, 0, size, size);
             ctx.globalAlpha = opacity;
             ctx.drawImage(image, imageStats["sx"], imageStats["sy"], imageStats["swidth"], imageStats["sheight"], imageStats["x"], imageStats["y"], imageStats["width"], imageStats["height"]);
             ctx.globalAlpha = 1.0;
@@ -707,6 +796,26 @@ addOnUISdk.ready.then(async () => {
 
     numberOpacity.oninput = () => { updateOpacity(numberOpacity, sliderOpacity) };
     sliderOpacity.oninput = () => { updateOpacity(sliderOpacity, numberOpacity) };
+
+    function updateEyeOpacity(elem, counterpart) {
+        counterpart.value = elem.value;
+        eyeOpacity = elem.value;
+        if(qrCodeCreated) {
+            console.log(opacity);
+            drawQRCode();
+        } else if(image) {
+            ctx.clearRect(0, 0, size, size);
+            ctx.fillStyle = colors["bg"];
+            ctx.fillRect(0, 0, size, size);
+            ctx.globalAlpha = opacity;
+            ctx.drawImage(image, imageStats["sx"], imageStats["sy"], imageStats["swidth"], imageStats["sheight"], imageStats["x"], imageStats["y"], imageStats["width"], imageStats["height"]);
+            ctx.globalAlpha = 1.0;
+        }
+    }
+
+    numberEyeOpacity.oninput = () => { updateEyeOpacity(numberEyeOpacity, sliderEyeOpacity) };
+    sliderEyeOpacity.oninput = () => { updateEyeOpacity(sliderEyeOpacity, numberEyeOpacity) };
+
     
     document.getElementById('generateButton-img').addEventListener('click', function(event) {
         event.preventDefault();
@@ -722,8 +831,8 @@ addOnUISdk.ready.then(async () => {
     document.getElementById('resetButton-img').addEventListener('click', function() {
         image = null;
         canvas.style.display = "none";
-        qrCodeCTX.clearRect(0, 0, size, size);
-        ctx.clearRect(0, 0, size, size);
+        qrCodeCTX.clearRect(0, 0, qrSize, qrSize);
+        ctx.clearRect(0, 0, qrSize, qrSize);
     });
 
 });
