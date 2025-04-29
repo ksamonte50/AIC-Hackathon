@@ -24,6 +24,8 @@
         <link rel="stylesheet" href="node_modules/@spectrum-css/slider/dist/index-vars.css">
         <link rel="stylesheet" href="node_modules/@spectrum-css/buttongroup/dist/index-vars.css">
         <link rel="stylesheet" href="node_modules/@spectrum-css/colorarea/dist/index-vars.css">
+        <link rel="stylesheet" href="node_modules/@spectrum-css/radio/dist/index-vars.css">
+        <link rel="stylesheet" href="node_modules/@spectrum-css/fieldgroup/dist/index-vars.css">
 
         <script src="https://use.typekit.net/mge7bvf.js"></script>
         <script>window.Typekit.load()</script>
@@ -153,10 +155,34 @@
                     </div>
 
                     <div class="spectrum-Form-item">
-                        <label for="opacity" class="spectrum-Form-itemLabel spectrum-FieldLabel--left">Opacity:</label>
+                        <div class=" spectrum-FieldGroup spectrum-FieldGroup--toplabel spectrum-FieldGroup--horizontal " role = "radiogroup">
+                            <label for="dotType" class="spectrum-Form-FieldLabel spectrum-FieldLabel--left">Dot Type: </label>
+                            <div class="spectrum-FieldGroupInputLayout">
+                                <div class="spectrum-Radio spectrum-FieldGroup-item">
+                                    <label for = "square" class="spectrum-Radio-label">Square </label>
+                                    <input type = "radio" id="square" name = "dotType" class="spectrum-Radio-input" value = "square" checked>
+                                </div>
+                                <div class="spectrum-Radio spectrum-FieldGroup-item">
+                                    <label for = "circle" class="spectrum-Radio-label">Circle </label>
+                                    <input type = "radio" id="circle" name = "dotType" class="spectrum-Radio-input" value = "circle">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="spectrum-Form-item">
+                        <label for="opacity" class="spectrum-Form-itemLabel spectrum-FieldLabel--left">Image Opacity:</label>
                         <div class="spectrum-Form-itemField spectrum-Slider">
                             <input type="number" id="numberOpacity" class="spectrum-Textfield spectrum-Textfield--quiet" min="0" max="1" step="0.1" value="1.0" style="width: 60px">
                             <input type="range" id="sliderOpacity" class="spectrum-Slider-input" min="0" max="1" step="0.01" value="1.0">
+                        </div>
+                    </div>
+
+                    <div class="spectrum-Form-item">
+                        <label class="spectrum-Form-itemLabel spectrum-FieldLabel--left">Eye Opacity:</label>
+                        <div class="spectrum-Form-itemField spectrum-Slider">
+                            <input type="number" id="numberEyeOpacity" class="spectrum-Textfield spectrum-Textfield--quiet" min="0" max="1" step="0.1" value="0.75" style="width: 60px">
+                            <input type="range" id="sliderEyeOpacity" class="spectrum-Slider-input" min="0" max="1" step="0.01" value="0.75">
                         </div>
                     </div>
 
