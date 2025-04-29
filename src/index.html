@@ -11,16 +11,19 @@
         <link rel="stylesheet" href="styles/styles.css" />
 
         <style>
-          #imgOnCanvas div {
-            margin: 20px;
-          }
+            #imgOnCanvas div {
+                margin: 20px;
+            }
         </style>
 
         <script type="module" src="ui/elements.js"></script>
 
         <link rel="stylesheet" href="node_modules/@spectrum-css/button/dist/index-vars.css">
         <link rel="stylesheet" href="node_modules/@spectrum-css/textfield/dist/index-vars.css">
-        <link rel="stylesheet" href="node_modules/@spectrum-css/fieldlabel/dist/index-vars.css"> 
+        <link rel="stylesheet" href="node_modules/@spectrum-css/fieldlabel/dist/index-vars.css">
+        <link rel="stylesheet" href="node_modules/@spectrum-css/slider/dist/index-vars.css">
+        <link rel="stylesheet" href="node_modules/@spectrum-css/buttongroup/dist/index-vars.css">
+        <link rel="stylesheet" href="node_modules/@spectrum-css/colorarea/dist/index-vars.css">
 
         <script src="https://use.typekit.net/mge7bvf.js"></script>
         <script>window.Typekit.load()</script>
@@ -34,113 +37,152 @@
             Please note that this document does not use the spectrum web components theme for Express.
             You may use "addOnUISdk.app.ui.theme" to get the current theme and style accordingly.
         -->
-         <!-- .spectrum-Typography will apply margins to all typography components like headings. -->
-        <h1 class="spectrum-Heading spectrum-Heading--M" id="mainTitle">Prettify QR</h1>
-        <main class="spectrum-Typography">
-            <h2>Generate a QR Code with Custom Aesthetic</h2>
-            <form class="spectrum-Form spectrum-Form--labelsAbove" aria-labelledby="login-label" id="mainTitle">
-              <div class="spectrum-Form-item">
-                <label for="qrCodeURL" class="spectrum-Form-itemLabel spectrum-FieldLabel--left">QR Code URL:</label>
-                <div class="spectrum-Form-itemField">
-                  <input class="spectrum-Textfield" id="qrCodeURL" placeholder="Enter your URL" name="qrCodeURL"/>
+            <!-- .spectrum-Typography will apply margins to all typography components like headings. -->
+            <h1 class="spectrum-Heading spectrum-Heading--M" id="mainTitle">Prettify QR</h1>
+            <main class="spectrum-Typography">
+                <h2>Generate a QR Code with Custom Aesthetic</h2>
+                <form class="spectrum-Form spectrum-Form--labelsAbove" aria-labelledby="login-label" id="mainTitle">
+                <div class="spectrum-Form-item">
+                    <label for="qrCodeURL" class="spectrum-Form-itemLabel spectrum-FieldLabel--left">QR Code URL:</label>
+                    <div class="spectrum-Form-itemField">
+                    <input class="spectrum-Textfield" id="qrCodeURL" placeholder="Enter your URL" name="qrCodeURL"/>
+                    </div>
                 </div>
-              </div>
-              <div class="spectrum-Form-item">
-                <label class="spectrum-Form-itemLabel spectrum-FieldLabel--left" for="qrCodeAesthetic">QR Code Aesthetic:</label>
-                <div class="spectrum-Form-itemField">
-                  <input class="spectrum-Textfield" type="text" placeholder="Describe the aesthetic" id="qrAesthetic">
+                <div class="spectrum-Form-item">
+                    <label class="spectrum-Form-itemLabel spectrum-FieldLabel--left" for="qrCodeAesthetic">QR Code Aesthetic:</label>
+                    <div class="spectrum-Form-itemField">
+                    <input class="spectrum-Textfield" type="text" placeholder="Describe the aesthetic" id="qrAesthetic">
+                    </div>
                 </div>
-              </div>
-              <div class="spectrum-Form-item"> </div>
+                <div class="spectrum-Form-item"> </div>
 
-              <button type="submit" class="spectrum-Button spectrum-Button--cta" id="generateButton">
-                  <span class="spectrum-Button-label">Generate</span>
-              </button>
+                <button type="submit" class="spectrum-Button spectrum-Button--cta" id="generateButton">
+                    <span class="spectrum-Button-label">Generate</span>
+                </button>
 
-              <button type="reset" class="spectrum-Button spectrum-Button--secondary" id="resetButton">
-                  <span class="spectrum-Button-label">Reset</span>
-              </button>
+                <button type="reset" class="spectrum-Button spectrum-Button--secondary" id="resetButton">
+                    <span class="spectrum-Button-label">Reset</span>
+                </button>
+                </form>
+                <div id="result"></div>
+            </main>
+
+            <main class="spectrum-Typography">
+            <h2>Generate a QR Code on top of a picture</h2>
+
+            <canvas id="frame" width="500px" height="500px" style="display: none;"></canvas>
+            <!-- <canvas id="qrCodeCanvas" width="500px" height="500px" style="display: block;"></canvas> -->
+
+            <form class="spectrum-Form spectrum-Form--labelsAbove" id="qrOnImageForm">
+                <div class="spectrum-Form-item">
+                    <label for="qrCodeURL-img" class="spectrum-Form-itemLabel spectrum-FieldLabel--left">QR Code URL:</label>
+                    <div class="spectrum-Form-itemField">
+                        <input class="spectrum-Textfield" type="url" id="qrCodeURL-img" name="qrCodeURL-img" placeholder="Enter your URL" required/>
+                    </div>
+                </div>
+
+                <div class="spectrum-Form-item">
+                    <label for="input" class="spectrum-Form-itemLabel spectrum-FieldLabel--left">Upload Image:</label>
+                    <div class="spectrum-Form-itemField">
+                        <input type="file" id="input" class="spectrum-Button spectrum-Button--secondary"/>
+                    </div>
+                </div>
+
+                <div id="imgOnCanvas">
+                    <div class="spectrum-Form-item">
+                        <label for="leftX" class="spectrum-Form-itemLabel spectrum-FieldLabel--left">Left Border:</label>
+                        <div class="spectrum-Form-itemField spectrum-Slider">
+                            <input type="number" id="numberLeftX" class="spectrum-Textfield spectrum-Textfield--quiet" min="0" max="1000" value="500" style="width: 60px">
+                            <input type="range" id="sliderLeftX" class="spectrum-Slider-input" min="0" max="500" value="500">
+                        </div>
+                    </div>
+
+                    <div class="spectrum-Form-item">
+                        <label for="rightX" class="spectrum-Form-itemLabel spectrum-FieldLabel--left">Right Border:</label>
+                        <div class="spectrum-Form-itemField spectrum-Slider">
+                            <input type="number" id="numberRightX" class="spectrum-Textfield spectrum-Textfield--quiet" min="0" max="1000" value="500" style="width: 60px">
+                            <input type="range" id="sliderRightX" class="spectrum-Slider-input" min="0" max="1000" value="500">
+                        </div>
+                    </div>
+
+                    <div class="spectrum-Form-item">
+                        <label for="topY" class="spectrum-Form-itemLabel spectrum-FieldLabel--left">Top Border:</label>
+                        <div class="spectrum-Form-itemField spectrum-Slider">
+                            <input type="number" id="numberTopY" class="spectrum-Textfield spectrum-Textfield--quiet" min="0" max="1000" value="500" style="width: 60px">
+                            <input type="range" id="sliderTopY" class="spectrum-Slider-input" min="0" max="1000" value="500">
+                        </div>
+                    </div>
+
+                    <div class="spectrum-Form-item">
+                        <label for="botY" class="spectrum-Form-itemLabel spectrum-FieldLabel--left">Bottom Border:</label>
+                        <div class="spectrum-Form-itemField spectrum-Slider">
+                            <input type="number" id="numberBotY" class="spectrum-Textfield spectrum-Textfield--quiet" min="0" max="1000" value="500" style="width: 60px">
+                            <input type="range" id="sliderBotY" class="spectrum-Slider-input" min="0" max="1000" value="500">
+                        </div>
+                    </div>
+
+                    <div class="spectrum-Form-item">
+                        <label for="offsetX" class="spectrum-Form-itemLabel spectrum-FieldLabel--left">X Offset:</label>
+                        <div class="spectrum-Form-itemField spectrum-Slider">
+                            <input type="number" id="numberXOff" class="spectrum-Textfield spectrum-Textfield--quiet" min="0" max="1000" value="500" style="width: 60px">
+                            <input type="range" id="sliderXOff" class="spectrum-Slider-input" min="0" max="1000" value="500">
+                        </div>
+                    </div>
+
+                    <div class="spectrum-Form-item">
+                        <label for="offsetY" class="spectrum-Form-itemLabel spectrum-FieldLabel--left">Y Offset:</label>
+                        <div class="spectrum-Form-itemField spectrum-Slider">
+                            <input type="number" id="numberYOff" class="spectrum-Textfield spectrum-Textfield--quiet" min="0" max="1000" value="500" style="width: 60px">
+                            <input type="range" id="sliderYOff" class="spectrum-Slider-input" min="0" max="1000" value="500">
+                        </div>
+                    </div>
+
+                    <div class="spectrum-Form-item">
+                        <div class="spectrum-Form-itemField">
+                            <div class="spectrum-Form-itemField--grouped">
+                                <label for="primary" class="spectrum-FieldLabel spectrum-FieldLabel--left">Primary Color:</label>
+                                <input type="color" id="primaryColor" name="primary" value="#000000" class="spectrum-ColorArea">
+                                
+                                <label for="secondary" class="spectrum-FieldLabel spectrum-FieldLabel--left">Secondary Color:</label>
+                                <input type="color" id="secondaryColor" name="secondary" value="#FFFFFF" class="spectrum-ColorArea">
+                                
+                                <label for="bg" class="spectrum-FieldLabel spectrum-FieldLabel--left">Background Color:</label>
+                                <input type="color" id="bgColor" name="bg" value="#FFFFFF" class="spectrum-ColorArea">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="spectrum-Form-item">
+                        <label for="opacity" class="spectrum-Form-itemLabel spectrum-FieldLabel--left">Opacity:</label>
+                        <div class="spectrum-Form-itemField spectrum-Slider">
+                            <input type="number" id="numberOpacity" class="spectrum-Textfield spectrum-Textfield--quiet" min="0" max="1" step="0.1" value="1.0" style="width: 60px">
+                            <input type="range" id="sliderOpacity" class="spectrum-Slider-input" min="0" max="1" step="0.01" value="1.0">
+                        </div>
+                    </div>
+
+                    <div class="spectrum-Form-item">
+                        <label for="dotSize" class="spectrum-Form-itemLabel spectrum-FieldLabel--left">Dot Size:</label>
+                        <div class="spectrum-Form-itemField spectrum-Slider">
+                            <input type="number" id="numberDotSize" class="spectrum-Textfield spectrum-Textfield--quiet" min="1" max="20" value="4" style="width: 60px">
+                            <input type="range" id="sliderDotSize" class="spectrum-Slider-input" min="1" max="20" value="4">
+                        </div>
+                    </div>
+
+                    <div class="spectrum-Form-item">
+                        <button type="button" class="spectrum-Button spectrum-Button--cta" id="draw">
+                            <span class="spectrum-Button-label">Make QR Code</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <button type="button" class="spectrum-Button spectrum-Button--cta" id="generateButton-img">
+                    <span class="spectrum-Button-label">Add to document</span>
+                </button>
+                <button type="button" class="spectrum-Button spectrum-Button--secondary" id="resetButton-img">
+                    <span class="spectrum-Button-label">Reset</span>
+                </button>
             </form>
-
-          <h2>Generate a QR Code on top of a picture</h2>
-          <div id="qrInputs-img">
-              <label for="qrCodeURL-img">QR Code URL:</label>
-              <input type="url" id="qrCodeURL-img" name="qrCodeURL-img" required/> 
-              <div id = "imgOnCanvas">
-                  <form>
-                      <input type="file" id="input" onchange="uploadNewImage()"><br>
-                      <div>
-                          <label for = "leftX">Left Border: </label>
-                          <input type="number" id = "numberLeftX" min = "0" max = "1000" style = "width: 50px" value = "500">
-                          <input type="range" id = "sliderLeftX" min = "0" max = "500" name="leftX" value = "500"><br>
-                      </div>
-                      <div>
-                          <label for = "rightX">Right Border: </label>
-                          <input type="number" id = "numberRightX" min = "0" max = "1000" style = "width: 50px" value = "500">
-                          <input type="range" id = "sliderRightX" min = "0" max = "1000" name="rightX" value = "500"><br>
-                      </div>
-
-                      <div>
-                          <label for = "topY">Top Border: </label>
-                          <input type="number" id = "numberTopY" min = "0" max = "1000" style = "width: 50px" value = "500">
-                          <input type="range" id = "sliderTopY" min = "0" max = "1000" name="topY" value = "500"><br>
-                      </div>
-                      <div>
-                          <label for = "botY">Bottom Border: </label>
-                          <input type="number" id = "numberBotY" min = "0" max = "1000" style = "width: 50px" value = "500">
-                          <input type="range" id = "sliderBotY" min = "0" max = "1000" name="botY" value = "500"><br>
-                      </div>
-
-                      <div>
-                          <label for = "offsetX">X offset: </label>
-                          <input type="number" id = "numberXOff" min = "0" max = "1000" style = "width: 50px" value = "500">
-                          <input type="range" id = "sliderXOff" min = "0" max = "1000" name="offsetX" value = "500"><br>
-                      </div>
-                      <div>
-                          <label for = "offsetY">Y offset: </label>
-                          <input type="number" id = "numberYOff" min = "0" max = "1000" style = "width: 50px" value = "500">
-                          <input type="range" id = "sliderYOff" min = "0" max = "1000" name="offsetY" value = "500"><br>
-                      </div>
-
-                      <div>
-                          <label for = "primary">Primary Color: </label>
-                          <input type="color" id="primaryColor" name = "primary" value = "#000000">
-
-                          <label for = "secondary">Secondary Color: </label>
-                          <input type="color" id="secondaryColor" name = "secondary" value = "#FFFFFF">
-
-                          <label for = "bg">Background Color: </label>
-                          <input type="color" id="bgColor" name = "bg" value = "#FFFFFF"> <br>
-                      </div>
-
-                      <div>
-                          <label for = "opacity">Opacity: </label>	
-                          <input type="number" id = "numberOpacity" min="0" max="1" step = "0.1" style = "width: 50px" value = "1.0" name="opacity">
-                          <input type="range" id = "sliderOpacity" min="0" step="0.01" max="1" value = "1.0"><br>
-                      </div>
-
-                      <div>
-                          <label for = "dotSize">Dot Size: </label>	
-                          <input type="number" id = "numberDotSize" min="1" max="20" value = "4" style = "width: 30px" name="dotSize">
-                          <input type="range" id = "sliderDotSize" min="1" max="20" value = "4"><br>
-                      </div>
-
-                  </form>
-                  <button id="draw">Make QR Code</button>
-              </div>
-
-              <canvas id = "frame" width = "500px" height = "500px" style = "border: 1px solid black; background-color: white; margin: 20px"></canvas>
-              <canvas id = "qrCodeCanvas" width = "500px" height = "500px" style = "display: none;"></canvas>
-            
-              <br><br>
-            
-              <button id="generateButton-img">Generate</button>
-              <button id="resetButton-img">Reset</button>
-          </div>
         </main>
-        
-        <div id="result"></div>
-
         <script type="module" src="ui/index.js"></script>
     </body>
 </html>

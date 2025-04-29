@@ -107,3 +107,92 @@ form {
     font-size: 1.2rem;
     color: var(--spectrum-global-color-gray-800);
 }
+
+/* QR on Image specific styles */
+#qrOnImageForm {
+    margin-top: 2rem;
+}
+
+#imgOnCanvas {
+    margin-top: 1rem;
+}
+
+.spectrum-Form-itemField--grouped {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.spectrum-Form-itemField--grouped .spectrum-FieldLabel {
+    margin-right: 0.5rem;
+}
+
+.spectrum-Form-itemField--grouped .spectrum-ColorArea {
+    width: 32px;
+    height: 32px;
+    padding: 2px;
+    border: 1px solid var(--spectrum-global-color-gray-300);
+    border-radius: 4px;
+}
+
+.spectrum-Slider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.spectrum-Slider-input {
+    flex: 1;
+}
+
+.spectrum-Canvas {
+    display: block;
+    margin: 1rem 0;
+    border: 1px solid var(--spectrum-global-color-gray-300) !important;
+    border-radius: 4px;
+    background-color: white;
+}
+
+.spectrum-ButtonGroup {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+/* Override the inline styles */
+#imgOnCanvas div {
+    margin: 0 0 1rem 0 !important;
+}
+
+/* File input styling */
+input[type="file"].spectrum-Button {
+    padding: 0.5rem;
+    background-color: var(--spectrum-global-color-gray-75);
+    border: 1px solid var(--spectrum-global-color-gray-300);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+input[type="file"].spectrum-Button:hover {
+    background-color: var(--spectrum-global-color-gray-100);
+}
+
+/* Quiet textfield styling */
+.spectrum-Textfield--quiet {
+    border: none;
+    border-bottom: 1px solid var(--spectrum-global-color-gray-300);
+    border-radius: 0;
+    padding: 0.25rem 0;
+}
+
+.spectrum-Textfield--quiet:focus {
+    border-bottom-color: var(--spectrum-global-color-blue-500);
+    box-shadow: none;
+}
+/* 
+#frame {
+    max-width: 100%;
+    border-radius: 4px;
+    background-color: var(--spectrum-global-color-gray-50);
+} */
